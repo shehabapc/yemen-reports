@@ -11,10 +11,71 @@ st.set_page_config(
     page_title="الشركة العربية للأدوية | نظام تقارير المناديب",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"  # تم تعديلها لإظهار زر الخروج
 )
 
-# --- 2. التنسيقات البصرية الهيكلية (CSS) ---
+# --- 2. إدارة تسجيل الدخول (Authentication) ---
+# بيانات الدخول الافتراضية (يمكنك تغييرها)
+USER_CREDENTIALS = {
+    "Shehab": "272174",
+    "apc_user": "apc2026"
+}
+
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+if "username" not in st.session_state:
+    st.session_state["username"] = ""
+
+def login_screen():
+    st.markdown("""
+    <style>
+        .login-box {
+            max-width: 450px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("<h2 style='text-align: center; color: #0d5c75;'>🔑 تسجيل الدخول للنظام</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #64748b;'>الشركة العربية للأدوية المحدودة</p>", unsafe_allow_html=True)
+        
+        with st.form("login_form"):
+            user_input = st.text_input("اسم المستخدم")
+            pass_input = st.text_input("كلمة المرور", type="password")
+            submit_button = st.form_submit_button("دخول إلى النظام")
+            
+            if submit_button:
+                if user_input in USER_CREDENTIALS and USER_CREDENTIALS[user_input] == pass_input:
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = user_input
+                    st.success("تم تسجيل الدخول بنجاح!")
+                    st.rerun()
+                else:
+                    st.error("اسم المستخدم أو كلمة المرور غير صحيحة.")
+
+# تحقق من حالة تسجيل الدخول قبل عرض التطبيق
+if not st.session_state["logged_in"]:
+    login_screen()
+    st.stop()  # إيقاف تنفيذ باقي الكود حتى يتم تسجيل الدخول
+
+# --- الشريط الجانبي لإدارة الجلسة ---
+with st.sidebar:
+    st.markdown(f"👤 **المستخدم الحالي:** `{st.session_state['username']}`")
+    if st.button("🚪 تسجيل الخروج"):
+        st.session_state["logged_in"] = False
+        st.session_state["username"] = ""
+        st.rerun()
+    st.markdown("---")
+
+# --- 3. التنسيقات البصرية الهيكلية (CSS) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
@@ -109,7 +170,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. الهيدر ورأس الصفحة مع شعار الشركة ---
+# --- 4. الهيدر ورأس الصفحة مع شعار الشركة ---
 logo_filename = "APC logo.png"
 
 col_head_title, col_head_logo = st.columns([3, 1])
@@ -131,7 +192,7 @@ with col_head_logo:
 
 st.markdown("<hr style='margin-top: 10px; margin-bottom: 25px; border-color: #cbd5e1;'>", unsafe_allow_html=True)
 
-# --- 4. مدخلات المستخدم والإعدادات ---
+# --- 5. مدخلات المستخدم والإعدادات ---
 st.markdown('<div class="section-title">📅 إعدادات التقرير والملف الخام</div>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns([1, 1, 2])
@@ -147,7 +208,7 @@ with col3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- 5. زر التشغيل ومعالجة البيانات ---
+# --- 6. زر التشغيل ومعالجة البيانات ---
 if st.button("🚀 إصدار التقرير النهائي") and uploaded_file is not None:
     with st.spinner("جاري معالجة البيانات وبناء ملف الإكسل المنسق..."):
         try:
@@ -328,7 +389,7 @@ if st.button("🚀 إصدار التقرير النهائي") and uploaded_file 
             wb.save(output)
             output.seek(0)
             
-            # --- 6. عرض المؤشرات السريعة وزر التحميل ---
+            # --- 7. عرض المؤشرات السريعة وزر التحميل ---
             st.markdown('<div class="section-title">📊 ملخص نتائج الفرع والإنتاجية</div>', unsafe_allow_html=True)
             
             m1, m2, m3, m4 = st.columns(4)
